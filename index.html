@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Monitor de Saldos Bancarios</title>
-  <meta http-equiv="refresh" content="60">
   <style>
     body {
       margin: 0;
@@ -23,22 +22,50 @@
       height: auto;
       border-radius: 12px;
       box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+      display: none;
     }
     .info {
       margin-top: 15px;
       font-size: 14px;
       color: #8b949e;
     }
+    #loading {
+      font-size: 16px;
+      color: #58a6ff;
+    }
   </style>
 </head>
 <body>
-  <img id="dashboard" src="" alt="Cargando saldos bancarios...">
-  <div class="info">La imagen se actualiza automáticamente cada 1 hora (autorefresh cada 60s).</div>
+  <div id="loading">Cargando último reporte en vivo...</div>
+  <img id="dashboard" alt="Monitor de saldos">
+  <div class="info">Actualización automática cada 1 hora. Se refresca en vivo cada 30 segundos.</div>
 
   <script>
-    // Se le agrega la fecha actual para evitar cualquier tipo de caché
-    const urlBase = "https://raw.githubusercontent.com/CUFSMITH/monitor-saldos/main/dashboard_saldos.png";
-    document.getElementById("dashboard").src = urlBase + "?t=" + new Date().getTime();
+    async function cargarUltimaImagen() {
+      try {
+        // Pedimos directo a la API de GitHub (sin pasar por CDN de caché)
+        const res = await fetch("https://api.github.com/repos/CUFSMITH/monitor-saldos/contents/dashboard_saldos.png", {
+          cache: "no-store",
+          headers: { "Accept": "application/vnd.github.v3+json" }
+        });
+        
+        if (res.ok) {
+          const data = await res.json();
+          const imgElem = document.getElementById("dashboard");
+          imgElem.src = "data:image/png;base64," + data.content;
+          imgElem.style.display = "block";
+          document.getElementById("loading").style.display = "none";
+        }
+      } catch (err) {
+        console.error("Error al obtener la imagen:", err);
+      }
+    }
+
+    // Cargar apenas abre
+    cargarUltimaImagen();
+
+    // Re-chequear cada 30 segundos si hay una imagen más nueva
+    setInterval(cargarUltimaImagen, 30000);
   </script>
 </body>
 </html>
