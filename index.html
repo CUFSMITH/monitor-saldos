@@ -22,7 +22,6 @@
       height: auto;
       border-radius: 12px;
       box-shadow: 0 8px 24px rgba(0,0,0,0.5);
-      display: none;
     }
     .info {
       margin-top: 15px;
@@ -32,40 +31,44 @@
     #loading {
       font-size: 16px;
       color: #58a6ff;
+      margin-bottom: 12px;
     }
   </style>
 </head>
 <body>
   <div id="loading">Cargando último reporte en vivo...</div>
-  <img id="dashboard" alt="Monitor de saldos">
+  <img id="dashboard" style="display: none;" alt="Monitor de saldos">
   <div class="info">Actualización automática cada 1 hora. Se refresca en vivo cada 30 segundos.</div>
 
   <script>
-    async function cargarUltimaImagen() {
-      try {
-        // Pedimos directo a la API de GitHub (sin pasar por CDN de caché)
-        const res = await fetch("https://api.github.com/repos/CUFSMITH/monitor-saldos/contents/dashboard_saldos.png", {
-          cache: "no-store",
-          headers: { "Accept": "application/vnd.github.v3+json" }
-        });
-        
-        if (res.ok) {
-          const data = await res.json();
-          const imgElem = document.getElementById("dashboard");
-          imgElem.src = "data:image/png;base64," + data.content;
-          imgElem.style.display = "block";
-          document.getElementById("loading").style.display = "none";
+    function actualizarDashboard() {
+      const imgElem = document.getElementById("dashboard");
+      const loadingElem = document.getElementById("loading");
+      
+      // Creamos una imagen temporal en memoria para precargarla sin parpadeos
+      const nuevaImg = new Image();
+      // Usamos ruta relativa al repo con timestamp único para forzar refresco
+      nuevaImg.src = "./dashboard_saldos.png?nocache=" + new Date().getTime();
+      
+      nuevaImg.onload = function() {
+        imgElem.src = nuevaImg.src;
+        imgElem.style.display = "block";
+        if (loadingElem) {
+          loadingElem.style.display = "none";
         }
-      } catch (err) {
-        console.error("Error al obtener la imagen:", err);
-      }
+      };
+
+      nuevaImg.onerror = function() {
+        // Fallback a GitHub Raw con timestamp si GitHub Pages tarda en sincronizar
+        nuevaImg.src = "https://raw.githubusercontent.com/CUFSMITH/monitor-saldos/main/dashboard_saldos.png?nocache=" + new Date().getTime();
+      };
     }
 
-    // Cargar apenas abre
-    cargarUltimaImagen();
+    // Carga inicial inmediata
+    actualizarDashboard();
 
-    // Re-chequear cada 30 segundos si hay una imagen más nueva
-    setInterval(cargarUltimaImagen, 30000);
+    // Actualiza cada 30 segundos
+    setInterval(actualizarDashboard, 30000);
   </script>
 </body>
 </html>
