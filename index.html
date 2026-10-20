@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Monitor de Saldos Bancarios</title>
+  <meta http-equiv="refresh" content="60">
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      background-color: #0e1117;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 90vh;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      color: #fff;
+    }
+    img {
+      max-width: 95%;
+      height: auto;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    }
+    .info {
+      margin-top: 15px;
+      font-size: 14px;
+      color: #8b949e;
+    }
+  </style>
+</head>
+<body>
+  <img id="dashboard" src="" alt="Cargando saldos bancarios...">
+  <div class="info">La imagen se actualiza automáticamente cada 1 hora (autorefresh cada 60s).</div>
+
+  <script>
+    // Se le agrega la fecha actual para evitar cualquier tipo de caché
+    const urlBase = "https://raw.githubusercontent.com/CUFSMITH/monitor-saldos/main/dashboard_saldos.png";
+    document.getElementById("dashboard").src = urlBase + "?t=" + new Date().getTime();
+  </script>
+</body>
+</html>
